@@ -56,6 +56,7 @@ import { registerApproveTimecardsTools } from "./tools/timecards/approveTimecard
 // util
 import { registerFindRecordsTool } from "./tools/util/findRecords.js";
 import { registerReconnectTool } from "./tools/util/reconnect.js";
+import { registerRunSoqlQueryTool } from "./tools/util/runSoqlQuery.js";
 
 export const server = new McpServer({
   name: "salesforce-mcp",
@@ -96,4 +97,5 @@ registerAllMissingTimecardsTools(server);
 registerAllMissingApprovalsTools(server);
 registerApproveTimecardsTools(server);
 registerFindRecordsTool(server);
+registerRunSoqlQueryTool(server);
 registerReconnectTool(server);
