@@ -18,7 +18,6 @@ Edit `.env` with your Salesforce credentials:
 
 ```
 SALESFORCE_INSTANCE_URL=https://willowtree.my.salesforce.com
-SALESFORCE_ACCESS_TOKEN=your-access-token-here
 ```
 
 ## Build & Run
