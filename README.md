@@ -5,8 +5,7 @@ An MCP (Model Context Protocol) server that exposes Salesforce PSA data through 
 ## Prerequisites
 
 - Node.js >= 18
-- A Salesforce org with PSA (FinancialForce/Certinia) installed
-- A Salesforce access token with API permissions
+- [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`sf`) installed and available on your PATH
 
 ## Setup
 
@@ -18,7 +17,7 @@ cp .env.example .env
 Edit `.env` with your Salesforce credentials:
 
 ```
-SALESFORCE_INSTANCE_URL=https://your-org.my.salesforce.com
+SALESFORCE_INSTANCE_URL=https://willowtree.my.salesforce.com
 SALESFORCE_ACCESS_TOKEN=your-access-token-here
 ```
 
@@ -30,9 +29,22 @@ npm start         # run the MCP server (stdio transport)
 npm run dev       # watch mode for development
 ```
 
+## Authentication
+
+On the first tool call, the server authenticates via the Salesforce CLI:
+
+1. It runs `sf org login web`, which opens your browser to the Salesforce SSO login page.
+2. You log in through the browser and authorize access.
+3. The CLI stores the session locally, and the server retrieves the access token via `sf org display`.
+4. The token is cached in memory for subsequent calls — no repeated logins within the same session.
+
+If your session expires, use the `reconnect` tool to re-authenticate without restarting the server.
+
 ## MCP Client Configuration
 
-Add to your MCP client config (e.g. Cursor `mcp.json`):
+### Cursor
+
+Add to `.cursor/mcp.json` in your project (or global settings):
 
 ```json
 {
@@ -43,6 +55,29 @@ Add to your MCP client config (e.g. Cursor `mcp.json`):
     }
   }
 }
+```
+
+### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "salesforce": {
+      "command": "node",
+      "args": ["/path/to/salesforce-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+### Claude Code
+
+Add via the CLI:
+
+```bash
+claude mcp add salesforce node /path/to/salesforce-mcp/dist/index.js
 ```
 
 ## Tools
