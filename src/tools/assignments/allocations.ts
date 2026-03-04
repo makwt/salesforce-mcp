@@ -52,6 +52,10 @@ const ASSIGNMENT_FIELDS = `
   pse__Time_Credited__c
 `.trim();
 
+function escapeLike(value: string): string {
+  return value.replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
 export function registerAllocationsTool(server: McpServer) {
   server.tool(
     "list_allocations",
@@ -59,17 +63,17 @@ export function registerAllocationsTool(server: McpServer) {
       "By default returns assignments active today (started on or before today, ending on or after today) with status Tentative or Scheduled, " +
       "scoped to WillowTree family companies (WillowTree, Poatek, GM2). " +
       "Use reporting_companies to filter by one or more specific companies (partial match each), or set all_companies=true to remove the scope restriction and return everyone across all companies. " +
-      "Use resource_name to look up a specific person's allocations. " +
+      "Use resource_names to look up one or more people's allocations (partial match each). " +
       "Use email to filter by the resource's email — accepts a domain (e.g. 'telusdigital.com') or a full address (e.g. 'lucas.medeiros@telusdigital.com'). " +
       "Use other filters to narrow by project, service line, region, country, title, or resource_role. " +
       "Set include_future=true to also include upcoming assignments that haven't started yet. " +
       "Returns per allocation: resource name, email, and title, project, start/end dates, allocation %, scheduled hours, billable flag, time-credited flag, bill rate, cost rate, projected revenue, status, reporting company, region, country, and a Salesforce URL. " +
       "Results are ordered by resource name, then start date.",
     {
-      resource_name: z
-        .string()
+      resource_names: z
+        .array(z.string())
         .optional()
-        .describe("Filter by resource (person) name (partial match, e.g. 'Victoria' or 'Victoria Jardim'). Use this to look up a specific person's current allocations."),
+        .describe("Filter by one or more resource (person) names (partial match each, e.g. ['Victoria Jardim', 'Lucas']). Use this to look up specific people's current allocations."),
       project: z
         .string()
         .optional()
@@ -117,7 +121,7 @@ export function registerAllocationsTool(server: McpServer) {
         .optional()
         .describe("Filter by the resource's email (partial match, e.g. 'telusdigital.com' for a domain or 'lucas.medeiros@telusdigital.com' for a specific address)."),
     },
-    async ({ resource_name, project, reporting_companies, all_companies, service_line, region, country, title, resource_role, status, include_future, email }) => {
+    async ({ resource_names, project, reporting_companies, all_companies, service_line, region, country, title, resource_role, status, include_future, email }) => {
       const activeStatuses = status && status.length > 0 ? status : ["Tentative", "Scheduled"];
       const statusList = activeStatuses.map((s) => `'${s}'`).join(", ");
 
@@ -132,24 +136,32 @@ export function registerAllocationsTool(server: McpServer) {
         conditions.push(`pse__Start_Date__c <= TODAY`);
       }
 
-      if (resource_name) conditions.push(`pse__Resource__r.Name LIKE '%${resource_name}%'`);
-      if (project) conditions.push(`pse__Project__r.Name LIKE '%${project}%'`);
+      if (resource_names && resource_names.length > 0) {
+        const clauses = resource_names.map((n) => {
+          const words = n.trim().split(/\s+/);
+          if (words.length === 1) return `pse__Resource__r.Name LIKE '%${escapeLike(n)}%'`;
+          return words.map((w) => `pse__Resource__r.Name LIKE '%${escapeLike(w)}%'`).join(" AND ");
+        });
+        const combined = clauses.map((c) => (clauses.length > 1 ? `(${c})` : c)).join(" OR ");
+        conditions.push(resource_names.length === 1 ? combined : `(${combined})`);
+      }
+      if (project) conditions.push(`pse__Project__r.Name LIKE '%${escapeLike(project)}%'`);
 
       if (!all_companies) {
         if (reporting_companies && reporting_companies.length > 0) {
-          const clauses = reporting_companies.map((c) => `Reporting_Company__c LIKE '%${c}%'`).join(" OR ");
+          const clauses = reporting_companies.map((c) => `Reporting_Company__c LIKE '%${escapeLike(c)}%'`).join(" OR ");
           conditions.push(`(${clauses})`);
         } else {
           conditions.push(`Reporting_Company__c IN ('WillowTree', 'Poatek', 'GM2')`);
         }
       }
 
-      if (service_line) conditions.push(`pse__Resource__r.pse__Group__r.Name LIKE '%${service_line}%'`);
-      if (region) conditions.push(`pse__Resource__r.pse__Region__r.Name LIKE '%${region}%'`);
-      if (country) conditions.push(`Resource_Country__c LIKE '%${country}%'`);
-      if (title) conditions.push(`pse__Resource__r.Business_Title__c LIKE '%${title}%'`);
-      if (resource_role) conditions.push(`pse__Resource__r.pse__Resource_Role__c LIKE '%${resource_role}%'`);
-      if (email) conditions.push(`pse__Resource__r.Email LIKE '%${email}%'`);
+      if (service_line) conditions.push(`pse__Resource__r.pse__Group__r.Name LIKE '%${escapeLike(service_line)}%'`);
+      if (region) conditions.push(`pse__Resource__r.pse__Region__r.Name LIKE '%${escapeLike(region)}%'`);
+      if (country) conditions.push(`Resource_Country__c LIKE '%${escapeLike(country)}%'`);
+      if (title) conditions.push(`pse__Resource__r.Business_Title__c LIKE '%${escapeLike(title)}%'`);
+      if (resource_role) conditions.push(`pse__Resource__r.pse__Resource_Role__c LIKE '%${escapeLike(resource_role)}%'`);
+      if (email) conditions.push(`pse__Resource__r.Email LIKE '%${escapeLike(email)}%'`);
 
       let records: AssignmentRecord[];
       try {
