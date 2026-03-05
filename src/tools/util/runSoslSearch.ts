@@ -7,9 +7,6 @@ export function registerRunSoslSearchTool(server: McpServer) {
     "run_sosl_search",
     "Executes a raw SOSL (Salesforce Object Search Language) search and returns matching records as JSON. " +
       "SOSL is a full-text cross-object search — use it when you want to find a term across multiple object types at once (e.g. find 'Acme' in Accounts, Contacts, and Projects simultaneously). " +
-      "IMPORTANT: only use this as a last resort when no structured tool can answer the question. " +
-      "Exception: it is fine to use this tool when a single SOSL search can replace what would otherwise require two or more calls to other tools. " +
-      "Prefer purpose-built tools like find_contacts, find_records, list_allocations, etc. " +
       "Example: FIND {Acme} IN ALL FIELDS RETURNING Account(Id, Name), Contact(Id, Name, Email). " +
       "The caller is responsible for writing valid SOSL. Results are returned as a JSON array of search records.",
     {
