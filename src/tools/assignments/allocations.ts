@@ -67,7 +67,8 @@ export function registerAllocationsTool(server: McpServer) {
       "Use email to filter by the resource's email — accepts a domain (e.g. 'telusdigital.com') or a full address (e.g. 'lucas.medeiros@telusdigital.com'). " +
       "Use other filters to narrow by project, service line, region, country, title, or resource_role. " +
       "Set include_future=true to also include upcoming assignments that haven't started yet. " +
-      "Returns per allocation: resource name, email, and title, project, start/end dates, allocation %, scheduled hours, billable flag, time-credited flag, bill rate, cost rate, projected revenue, status, reporting company, region, country, and a Salesforce URL. " +
+      "Returns per allocation: resource name, email, and title, project, start/end dates, allocation %, scheduled hours, status, reporting company, region, country, and a Salesforce URL. " +
+      "Financial fields (billable flag, time-credited flag, bill rate, cost rate, projected revenue) are excluded by default — set include_financial_fields=true to include them. " +
       "Results are ordered by resource name, then start date.",
     {
       resource_names: z
@@ -120,8 +121,12 @@ export function registerAllocationsTool(server: McpServer) {
         .string()
         .optional()
         .describe("Filter by the resource's email (partial match, e.g. 'telusdigital.com' for a domain or 'lucas.medeiros@telusdigital.com' for a specific address)."),
+      include_financial_fields: z
+        .boolean()
+        .optional()
+        .describe("When true, includes financial fields in the output: billable flag, time-credited flag, bill rate, cost rate, and projected revenue. Default false."),
     },
-    async ({ resource_names, project, reporting_companies, all_companies, service_line, region, country, title, resource_role, status, include_future, email }) => {
+    async ({ resource_names, project, reporting_companies, all_companies, service_line, region, country, title, resource_role, status, include_future, email, include_financial_fields }) => {
       const activeStatuses = status && status.length > 0 ? status : ["Tentative", "Scheduled"];
       const statusList = activeStatuses.map((s) => `'${s}'`).join(", ");
 
@@ -212,11 +217,13 @@ export function registerAllocationsTool(server: McpServer) {
           `  Dates:              ${r.pse__Start_Date__c ?? "—"} → ${r.pse__End_Date__c ?? "—"}`,
           `  Allocation:         ${r.pse__Percent_Allocated__c != null ? `${r.pse__Percent_Allocated__c}%` : "—"}`,
           `  Scheduled Hours:    ${fmt(r.pse__Scheduled_Hours__c)}`,
-          `  Billable:           ${r.pse__Is_Billable__c ? "Yes" : "No"}`,
-          `  Time Credited:      ${r.pse__Time_Credited__c ? "Yes" : "No"}`,
-          `  Bill Rate:          ${fmt(r.pse__Bill_Rate__c, "$")}`,
-          `  Cost Rate:          ${fmt(r.pse__Cost_Rate__c, "$")}`,
-          `  Projected Revenue:  ${fmt(r.pse__Projected_Revenue__c, "$")}`,
+          ...(include_financial_fields ? [
+            `  Billable:           ${r.pse__Is_Billable__c ? "Yes" : "No"}`,
+            `  Time Credited:      ${r.pse__Time_Credited__c ? "Yes" : "No"}`,
+            `  Bill Rate:          ${fmt(r.pse__Bill_Rate__c, "$")}`,
+            `  Cost Rate:          ${fmt(r.pse__Cost_Rate__c, "$")}`,
+            `  Projected Revenue:  ${fmt(r.pse__Projected_Revenue__c, "$")}`,
+          ] : []),
           `  Status:             ${r.pse__Status__c ?? "—"}`,
           `  Reporting Company:  ${r.Reporting_Company__c ?? practice}`,
           `  Region:             ${regionName}`,

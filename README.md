@@ -1,13 +1,85 @@
 # Salesforce MCP Server
 
-An MCP (Model Context Protocol) server that exposes Salesforce PSA data through structured tools. Designed for use with AI assistants (Cursor, Claude, etc.) to answer operational questions for General Managers, Directors, Project Managers, Engineering Managers, and Individual Contributors.
+Ask questions about WillowTree's Salesforce data — projects, revenue, people, timecards, and more — directly inside your AI assistant (Cursor, Claude, etc.), using plain English.
 
-## Prerequisites
+> **First time here? Jump straight to [Getting Started](#getting-started) below.**
+
+---
+
+## Getting Started
+
+No technical experience needed. One command does everything for you.
+
+### Step 1 — Download this project
+
+If you received this as a zip file, unzip it somewhere easy to find (e.g. your Desktop or Documents folder).
+
+If you have Git, you can also clone it:
+
+```bash
+git clone <repo-url>
+cd salesforce-mcp
+```
+
+### Step 2 — Open Terminal
+
+- **Mac:** Press `Command + Space`, type `Terminal`, and hit Enter.
+- **Windows:** Press `Windows + R`, type `cmd`, and hit Enter.
+
+Navigate to the project folder. For example, if you unzipped it to your Desktop:
+
+```bash
+cd ~/Desktop/salesforce-mcp
+```
+
+### Step 3 — Run the setup script
+
+```bash
+bash setup.sh
+```
+
+The script will:
+
+1. Check that everything it needs is installed (and tell you exactly what to do if something is missing).
+2. Install the project and build it automatically.
+3. Ask which AI client you use — **Cursor**, **Claude Code**, or **Claude Desktop / Cowork** — and configure it for you.
+4. Optionally log you in to Salesforce right away.
+
+That's it. You're done.
+
+---
+
+### What can I ask after setup?
+
+Open your AI assistant and try questions like:
+
+- *"What projects am I currently on?"*
+- *"Show me the revenue forecast for this quarter."*
+- *"Who are the bench resources available right now?"*
+- *"What are my missing timecards this week?"*
+- *"List all open resource requests for my team."*
+
+### My session expired / I need to log in again
+
+Just tell your AI assistant: **"reconnect"** — it will re-authenticate without any restart.
+
+### Need to re-run setup?
+
+`bash setup.sh` is safe to run as many times as you like.
+
+---
+
+## For Developers
+
+<details>
+<summary>Manual setup and configuration details</summary>
+
+### Prerequisites
 
 - Node.js >= 18
 - [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`sf`) installed and available on your PATH
 
-## Setup
+### Setup
 
 ```bash
 npm install
@@ -20,7 +92,7 @@ Edit `.env` with your Salesforce credentials:
 SALESFORCE_INSTANCE_URL=https://willowtree.my.salesforce.com
 ```
 
-## Build & Run
+### Build & Run
 
 ```bash
 npm run build     # compile TypeScript
@@ -28,7 +100,7 @@ npm start         # run the MCP server (stdio transport)
 npm run dev       # watch mode for development
 ```
 
-## Authentication
+### Authentication
 
 On the first tool call, the server authenticates via the Salesforce CLI:
 
@@ -39,11 +111,11 @@ On the first tool call, the server authenticates via the Salesforce CLI:
 
 If your session expires, use the `reconnect` tool to re-authenticate without restarting the server.
 
-## MCP Client Configuration
+### MCP Client Configuration
 
-### Cursor
+#### Cursor
 
-Add to `.cursor/mcp.json` in your project (or global settings):
+Add to `~/.cursor/mcp.json` (global, works in every project):
 
 ```json
 {
@@ -56,7 +128,7 @@ Add to `.cursor/mcp.json` in your project (or global settings):
 }
 ```
 
-### Claude Desktop
+#### Claude Desktop / Cowork
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
@@ -71,13 +143,13 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 }
 ```
 
-### Claude Code
-
-Add via the CLI:
+#### Claude Code
 
 ```bash
-claude mcp add salesforce node /path/to/salesforce-mcp/dist/index.js
+claude mcp add salesforce -- node /path/to/salesforce-mcp/dist/index.js
 ```
+
+</details>
 
 ## Tools
 
@@ -173,7 +245,9 @@ claude mcp add salesforce node /path/to/salesforce-mcp/dist/index.js
 
 | Tool | Description |
 |------|-------------|
-| `search_records_by_name` | Cross-object SOSL search by name/keyword — returns IDs and URLs |
+| `search_records_by_name` | Full-text search across Projects, Accounts, Contacts, Opportunities, and Resource Requests by name or keyword — returns IDs and URLs |
+| `run_sosl_search` | Executes a raw SOSL search across any object types — use when `search_records_by_name` doesn't cover what you need |
+| `get_object_fields` | Lists all field names, labels, and types for any Salesforce object — useful before writing ad-hoc SOQL queries |
 | `run_soql_query` | Raw SOQL query execution (last resort for ad-hoc queries) |
 | `reconnect` | Re-authenticates the Salesforce connection |
 
