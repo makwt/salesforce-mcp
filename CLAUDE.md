@@ -1,3 +1,12 @@
+---
+mode: LEAN
+audience: SELF
+classification:
+  work_or_personal: WORK
+  personal_stakes: "NO"
+  classified_at: 2026-05-19
+---
+
 # Salesforce MCP
 
 An MCP server exposing WillowTree's Salesforce data — projects, revenue, people, timecards, skills, and assignments — as tools for Claude, Cursor, and other AI assistants.
