@@ -12,7 +12,11 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.5.0",
+    "@nivo/core": "^0.99.0",
+    "@nivo/geo": "^0.99.0",
+    "@nivo/radial-bar": "^0.99.0",
     "dotenv": "^16.4.7",
+    "recharts": "^3.8.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {
