@@ -4,7 +4,7 @@ import { clearCachedToken, getCurrentUser } from "../../lib/salesforce.js";
 export function registerReconnectTool(server: McpServer) {
   server.tool(
     "reconnect",
-    "Re-authenticates with Salesforce by clearing the cached token and opening a new browser login via the sf CLI. Use this when your session has expired or you need to switch accounts.",
+    "Drops the in-memory access token and re-reads it from the `sf` CLI's current session. Use this AFTER you have re-authenticated at a terminal with `sf org login web --instance-url https://willowtree.my.salesforce.com --alias willowtree`. This tool does NOT open a browser — running over MCP stdio, it cannot launch interactive flows.",
     {},
     async () => {
       clearCachedToken();

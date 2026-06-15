@@ -13,20 +13,40 @@ export function clearCachedToken(): void {
 async function getAccessToken(): Promise<string> {
   if (cachedToken) return cachedToken;
 
-  // Open SSO web login — blocks until the user completes auth in the browser.
-  // stdout is piped (not inherited) to avoid corrupting the MCP stdio stream.
-  execSync(
-    `sf org login web --instance-url ${SF_INSTANCE_URL} --alias ${SF_ALIAS}`,
-    { stdio: ["pipe", "pipe", "pipe"] }
-  );
+  // Read the cached token from the sf CLI's existing session. We intentionally
+  // do NOT call `sf org login web` here — it opens a browser, which hangs in
+  // MCP stdio context. If the CLI session has expired, this throws and the
+  // user re-authenticates once at the shell with `sf org login web`.
+  //
+  // SF_TEMP_SHOW_SECRETS=true forces `sf org display` to return the real
+  // accessToken instead of [REDACTED] on sf CLI >= 2.137.x.
+  let raw: string;
+  try {
+    raw = execSync(
+      `sf org display --target-org ${SF_ALIAS} --verbose --json`,
+      {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+        env: { ...process.env, SF_TEMP_SHOW_SECRETS: "true" },
+      }
+    );
+  } catch (err) {
+    throw new Error(
+      `Salesforce CLI session not available for alias "${SF_ALIAS}". ` +
+        `Run \`sf org login web --instance-url ${SF_INSTANCE_URL} --alias ${SF_ALIAS}\` ` +
+        `in a terminal once, then retry.`
+    );
+  }
 
-  const raw = execSync(
-    `sf org display --target-org ${SF_ALIAS} --verbose --json`,
-    { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }
-  );
   const json = JSON.parse(raw) as { result?: { accessToken?: string } };
   const token = json.result?.accessToken;
-  if (!token) throw new Error("Could not retrieve Salesforce access token from sf CLI");
+  if (!token || token === "[REDACTED]") {
+    throw new Error(
+      `Could not retrieve Salesforce access token from sf CLI. ` +
+        `If you see [REDACTED], your sf CLI version may not honor SF_TEMP_SHOW_SECRETS — ` +
+        `upgrade with \`npm i -g @salesforce/cli\` or downgrade and retry.`
+    );
+  }
 
   cachedToken = token;
   return token;

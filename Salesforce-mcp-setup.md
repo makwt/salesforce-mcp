@@ -243,7 +243,13 @@ If the assistant returns Salesforce data, you're done. 🎉
 ## Common questions
 
 **My session expired / I get an authentication error.**
-Just tell your AI assistant: **"reconnect"** — it will re-authenticate without restarting anything.
+Re-authenticate at the terminal with one command, then tell your AI assistant **"reconnect"**:
+
+```bash
+sf org login web --instance-url https://willowtree.my.salesforce.com --alias willowtree
+```
+
+Your browser opens to the WillowTree Salesforce login page (same as during setup). Log in, return to Terminal, then tell your AI assistant: **"reconnect"**. It will pick up the new session without restarting anything.
 
 **I want to re-run setup.**
 That's safe. Just navigate back to the folder and run setup again:

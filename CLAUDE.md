@@ -72,7 +72,19 @@ See [`README.md`](README.md) "Getting Started" for end-user setup. Developers: `
 
 ## Authentication
 
-On first tool call, the server invokes `sf org login web`, which opens the Salesforce SSO page in your browser. You authenticate once; the token is cached in memory for the session's lifetime. Subsequent calls reuse the cached token. When your session expires, call the `reconnect` tool to refresh.
+The server **never** opens a browser. It reads the existing `sf` CLI session via `sf org display --target-org willowtree --verbose --json` (with `SF_TEMP_SHOW_SECRETS=true` to defeat token redaction on sf CLI >= 2.137.x) and caches the access token in memory for the process lifetime.
+
+Initial login happens once at install time, when the user runs `setup.sh` interactively at a real terminal — that's where `sf org login web` actually fires. The MCP server itself runs over stdio and would hang on any browser launch, so the auth path is intentionally read-only against the CLI's existing session.
+
+When the Salesforce session expires, the user re-authenticates at a shell:
+
+```bash
+sf org login web --instance-url https://willowtree.my.salesforce.com --alias willowtree
+```
+
+…then calls the `reconnect` tool to drop the in-memory cache and pick up the new token (or just restarts the MCP server).
+
+**Historical note:** an earlier version called `sf org login web` from inside `getAccessToken()`. That hangs in MCP stdio context. Removed 2026-06-15. See `src/lib/salesforce.ts`.
 
 ## Conventions
 
@@ -84,7 +96,9 @@ On first tool call, the server invokes `sf org login web`, which opens the Sales
 
 ## Security
 
-- **No hardcoded credentials.** Salesforce access token is obtained via `sf org login web` SSO on first call; `.env` contains only the instance URL (optional).
+> See [`_program/references/secrets.md`](../_program/references/secrets.md). Authentication uses Salesforce CLI SSO (`sf org login web`) — no personal-vault secret; tokens are session-scoped in memory.
+
+- **No hardcoded credentials.** Salesforce access token is read at runtime from the `sf` CLI's existing session (`sf org display`); initial SSO login happens once via `setup.sh`. `.env` contains only the instance URL (optional).
 - **Token caching is session-scoped.** Cached token lives in memory; process exit clears it. Long-running servers should implement token refresh.
 - **SOQL/SOSL are user-controlled queries.** `run_soql_query` and `run_sosl_search` allow arbitrary queries; assume untrusted input and lean on Salesforce's own FLS/CRUD permissions to gate data visibility.
 - **Write mutations are scoped.** `approve_timecards` checks that the caller is the `Actual Approver`; `upsert_skill` assumes Salesforce FLS gates the write.

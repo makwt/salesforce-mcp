@@ -4,117 +4,242 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Salesforce MCP — Setup Guide (Mac)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter+Tight:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #ffffff;
-    --bg-soft: #f7f8fa;
-    --text: #1f2328;
-    --text-soft: #57606a;
-    --border: #d0d7de;
-    --accent: #4b2e83;
-    --accent-soft: #ece6f5;
-    --code-bg: #0d1117;
-    --code-text: #e6edf3;
-    --code-comment: #8b949e;
-    --code-keyword: #ff7b72;
-    --code-string: #a5d6ff;
-    --warn-bg: #fff8c5;
-    --warn-border: #d4a72c;
-    --note-bg: #ddf4ff;
-    --note-border: #0969da;
-    --success-bg: #dafbe1;
-    --success-border: #1a7f37;
+    --bg: #FAF7F2;
+    --bg-card: #F4EFE6;
+    --bg-note: #EFF2EA;
+    --bg-warn: #F7EDD9;
+    --ink: #1A2332;
+    --ink-soft: #5B6675;
+    --ink-faint: #8A93A0;
+    --navy: #0F2A40;
+    --ohio: #B85C2C;
+    --khan: #2A7F62;
+    --test: #3E6FA8;
+    --rule: #D9CFB8;
+    --rule-strong: #B8AB8F;
+    --shadow: 0 1px 0 rgba(26,35,50,.04), 0 8px 24px -12px rgba(26,35,50,.08);
   }
+
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--text);
     background: var(--bg);
+    color: var(--ink);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.72;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
   }
-  .container {
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .35;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.85  0 0 0 0 0.80  0 0 0 0 0.70  0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--bg-card);
+    border-right: 1px solid var(--rule);
+    overflow-y: auto;
+    padding: 28px 0;
+    z-index: 10;
+  }
+
+  .sidebar-content {
+    padding: 0 18px;
+  }
+
+  .sidebar-title {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+    padding: 0 8px;
+  }
+
+  .sidebar-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar-nav li {
+    margin: 0;
+  }
+
+  .sidebar-nav a {
+    display: block;
+    padding: 8px 12px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .sidebar-nav a:hover {
+    background: rgba(184, 92, 44, 0.08);
+    color: var(--ohio);
+    border-left-color: var(--ohio);
+  }
+
+  .sidebar-nav a.active {
+    background: var(--ohio);
+    color: #fff;
+    font-weight: 600;
+    border-left-color: var(--ohio);
+  }
+
+  .main-content {
+    position: relative;
+    z-index: 1;
+    margin-left: 280px;
+    flex: 1;
+    padding: 48px 40px 96px;
     max-width: 820px;
-    margin: 0 auto;
-    padding: 48px 28px 96px;
   }
+
   header.page-header {
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 2px solid var(--border);
+    border-bottom: 2px solid var(--rule-strong);
   }
+
   header.page-header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 48px;
+    line-height: 1.15;
+    color: var(--navy);
     margin: 0 0 8px;
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
   }
+
   header.page-header .subtitle {
-    color: var(--text-soft);
     font-size: 17px;
-    margin: 0;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
   }
+
   .meta-bar {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 16px;
   }
+
   .meta-chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: rgba(42, 127, 98, 0.1);
+    color: var(--khan);
     padding: 4px 12px;
     border-radius: 999px;
-    font-size: 13px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
+
   h2 {
-    font-size: 24px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 38px;
+    line-height: 1.15;
+    color: var(--navy);
     margin: 48px 0 16px;
-    padding-top: 8px;
-    font-weight: 700;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule-strong);
+    letter-spacing: -0.015em;
+    position: relative;
+  }
+
+  h2::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 18px;
+    width: 6px;
+    height: 22px;
+    background: var(--ohio);
+  }
+
+  h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1.2;
+    color: var(--navy);
+    margin: 28px 0 12px;
     letter-spacing: -0.01em;
   }
-  h3 {
-    font-size: 18px;
-    margin: 28px 0 12px;
-    font-weight: 600;
-  }
+
   hr {
     border: none;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
     margin: 40px 0;
   }
+
   p { margin: 12px 0; }
   ul, ol { padding-left: 24px; margin: 12px 0; }
   li { margin: 6px 0; }
-  strong { font-weight: 600; }
+
+  strong {
+    color: var(--navy);
+    font-weight: 600;
+  }
+
   code {
     font-family: "SF Mono", Monaco, Menlo, Consolas, "Liberation Mono", monospace;
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
+    background: var(--bg);
+    border: 1px solid var(--rule);
     border-radius: 4px;
-    padding: 1px 6px;
+    padding: 2px 6px;
     font-size: 0.92em;
+    color: var(--navy);
   }
+
   pre code {
     background: transparent;
     border: none;
     padding: 0;
+    color: #e6edf3;
   }
+
   .code-block {
     position: relative;
-    background: var(--code-bg);
-    color: var(--code-text);
+    background: var(--navy);
+    color: #e6edf3;
     border-radius: 8px;
     margin: 16px 0;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
   }
+
   .code-block pre {
     margin: 0;
     padding: 16px 60px 16px 18px;
@@ -124,139 +249,177 @@
     line-height: 1.55;
     white-space: pre;
   }
+
   .copy-btn {
     position: absolute;
     top: 8px;
     right: 8px;
     background: rgba(255,255,255,0.08);
-    color: var(--code-text);
+    color: #e6edf3;
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 6px;
     padding: 4px 10px;
     font-size: 12px;
-    font-family: inherit;
+    font-family: 'Inter Tight', sans-serif;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
   }
+
   .copy-btn:hover { background: rgba(255,255,255,0.18); }
+
   .copy-btn.copied {
-    background: var(--success-border);
+    background: var(--khan);
     color: #fff;
-    border-color: var(--success-border);
+    border-color: var(--khan);
   }
+
   blockquote {
     margin: 16px 0;
     padding: 12px 18px;
-    border-left: 4px solid var(--border);
-    color: var(--text-soft);
-    background: var(--bg-soft);
+    border-left: 4px solid var(--ohio);
+    color: var(--ink-soft);
+    background: var(--bg-card);
     border-radius: 0 6px 6px 0;
     font-style: italic;
   }
+
   .callout {
     margin: 18px 0;
     padding: 14px 18px;
     border-radius: 8px;
     border: 1px solid;
+    border-left-width: 4px;
   }
+
   .callout-title {
+    font-family: 'Inter Tight', sans-serif;
     font-weight: 700;
     margin: 0 0 4px;
-    font-size: 14px;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.14em;
   }
+
   .callout p:last-child { margin-bottom: 0; }
   .callout p:first-of-type { margin-top: 4px; }
+
   .callout.note {
-    background: var(--note-bg);
-    border-color: var(--note-border);
+    background: var(--bg-note);
+    border-color: var(--khan);
   }
-  .callout.note .callout-title { color: var(--note-border); }
+
+  .callout.note .callout-title { color: var(--khan); }
+
   .callout.warn {
-    background: var(--warn-bg);
-    border-color: var(--warn-border);
+    background: var(--bg-warn);
+    border-color: var(--ohio);
   }
-  .callout.warn .callout-title { color: #8a6d00; }
+
+  .callout.warn .callout-title { color: var(--ohio); }
+
   .callout.success {
-    background: var(--success-bg);
-    border-color: var(--success-border);
+    background: var(--bg-note);
+    border-color: var(--khan);
   }
-  .callout.success .callout-title { color: var(--success-border); }
+
+  .callout.success .callout-title { color: var(--khan); }
+
   .step-header {
     display: flex;
     align-items: center;
     gap: 14px;
     margin: 56px 0 16px;
   }
+
   .step-number {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 38px;
     height: 38px;
-    background: var(--accent);
+    background: var(--ohio);
     color: #fff;
     border-radius: 50%;
     font-weight: 700;
     font-size: 17px;
     flex-shrink: 0;
   }
-  .step-header h2 { margin: 0; padding: 0; }
+
+  .step-header h2 { margin: 0; padding: 0; border: none; }
+  .step-header h2::before { display: none; }
+
   kbd {
     font-family: "SF Mono", Monaco, Menlo, Consolas, monospace;
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
+    background: var(--bg);
+    border: 1px solid var(--rule);
     border-bottom-width: 2px;
     border-radius: 4px;
     padding: 1px 6px;
     font-size: 0.85em;
-    color: var(--text);
+    color: var(--navy);
   }
-  .toc {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 18px 22px;
-    margin: 24px 0 32px;
-  }
-  .toc-title {
-    font-weight: 700;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-soft);
-    margin: 0 0 8px;
-  }
-  .toc ol {
-    margin: 0;
-    padding-left: 22px;
-  }
-  .toc li { margin: 3px 0; }
-  .toc a {
-    color: var(--accent);
+
+  a {
+    color: var(--test);
     text-decoration: none;
+    border-bottom: 1px solid rgba(62, 111, 168, 0.3);
+    transition: all 0.15s;
   }
-  .toc a:hover { text-decoration: underline; }
-  a { color: var(--accent); }
+
+  a:hover {
+    color: var(--ohio);
+    border-bottom-color: var(--ohio);
+  }
+
   footer {
     margin-top: 64px;
     padding-top: 24px;
-    border-top: 1px solid var(--border);
-    color: var(--text-soft);
-    font-size: 13px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-soft);
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
     text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
+
+  @media (max-width: 1024px) {
+    body { flex-direction: column; }
+    .sidebar {
+      position: static;
+      width: 100%;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--rule);
+      padding: 16px 0;
+    }
+    .sidebar-content {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding: 0 24px;
+    }
+    .main-content {
+      margin-left: 0;
+      padding: 32px 24px 64px;
+    }
+  }
+
   @media (max-width: 600px) {
-    .container { padding: 24px 16px 64px; }
-    header.page-header h1 { font-size: 26px; }
-    h2 { font-size: 20px; }
+    .main-content { padding: 24px 16px 64px; }
+    header.page-header h1 { font-size: 32px; }
+    h2 { font-size: 26px; }
     .step-header { gap: 10px; }
     .step-number { width: 32px; height: 32px; font-size: 15px; }
+    .sidebar-nav a { padding: 6px 10px; font-size: 13px; }
   }
+
   @media print {
     body { background: #fff; }
+    body::before { display: none; }
+    .sidebar { display: none; }
+    .main-content { margin-left: 0; }
     .copy-btn { display: none; }
     .code-block { box-shadow: none; border: 1px solid #ccc; }
     a { color: #000; text-decoration: underline; }
@@ -264,32 +427,35 @@
 </style>
 </head>
 <body>
-<div class="container">
+
+<nav class="sidebar">
+  <div class="sidebar-content">
+    <p class="sidebar-title">Setup Steps</p>
+    <ul class="sidebar-nav">
+      <li><a href="#prereq" class="nav-link">Prerequisites</a></li>
+      <li><a href="#step1" class="nav-link">Install Homebrew</a></li>
+      <li><a href="#step2" class="nav-link">Install Tools</a></li>
+      <li><a href="#step3" class="nav-link">GitHub Sign In</a></li>
+      <li><a href="#step4" class="nav-link">Download Project</a></li>
+      <li><a href="#step5" class="nav-link">Run Setup</a></li>
+      <li><a href="#step6" class="nav-link">Restart & Test</a></li>
+      <li><a href="#faq" class="nav-link">Common Questions</a></li>
+      <li><a href="#quickref" class="nav-link">Quick Reference</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="main-content">
 
 <header class="page-header">
-  <h1>Salesforce MCP — Setup Guide</h1>
-  <p class="subtitle">Get the WillowTree Salesforce MCP running on your Mac and connected to Claude Desktop / Cowork or Claude Code.</p>
+  <h1>Salesforce MCP — Setup</h1>
+  <p class="subtitle">Get the Salesforce MCP running on your Mac and connected to Claude Desktop / Cowork or Claude Code.</p>
   <div class="meta-bar">
     <span class="meta-chip">macOS only</span>
     <span class="meta-chip">No coding experience needed</span>
     <span class="meta-chip">~30 minutes</span>
   </div>
 </header>
-
-<div class="toc">
-  <p class="toc-title">What you'll do</p>
-  <ol>
-    <li><a href="#prereq">Before you start (GitHub account + MFA)</a></li>
-    <li><a href="#step1">Install Homebrew</a></li>
-    <li><a href="#step2">Install Git, Node, GitHub CLI, Salesforce CLI</a></li>
-    <li><a href="#step3">Sign in to GitHub through your browser</a></li>
-    <li><a href="#step4">Download the project</a></li>
-    <li><a href="#step5">Run the setup script</a></li>
-    <li><a href="#step6">Restart Claude and test</a></li>
-    <li><a href="#faq">Common questions</a></li>
-    <li><a href="#quickref">Quick command reference</a></li>
-  </ol>
-</div>
 
 <hr id="prereq" />
 
@@ -298,7 +464,7 @@
 <p>You will need three things before running the technical steps:</p>
 <ol>
   <li><strong>A GitHub account</strong> (free) with multi-factor authentication enabled</li>
-  <li><strong>Access to the WillowTree Salesforce MCP repository</strong></li>
+  <li><strong>Access to the WillowTree Salesforce MCP repository</strong> (or use the alternative)</li>
   <li><strong>About 30 minutes of uninterrupted time</strong></li>
 </ol>
 
@@ -340,7 +506,22 @@
   <p>Check your spam folder first. If you still don't see it after a few minutes, the repository owner may need to re-send the invite from the GitHub org settings.</p>
 </div>
 
-<h3>C. Open Terminal</h3>
+<h3>C. Download and set up Claude Desktop</h3>
+
+<p>You'll need the Claude Desktop application for the Salesforce MCP to work. If you don't have it yet, follow these steps:</p>
+
+<ol>
+  <li>Open your browser and go to <a href="https://claude.ai/download">https://claude.ai/download</a></li>
+  <li>Click the download link for Mac (it will download a .dmg file).</li>
+  <li>Open the downloaded file and drag the <strong>Claude</strong> app into your <strong>Applications</strong> folder.</li>
+  <li>Open <strong>Applications</strong> (press <kbd>⌘</kbd> + <kbd>Space</kbd>, type "Applications", press <kbd>Enter</kbd>) and double-click <strong>Claude</strong> to launch it.</li>
+  <li>When prompted to log in, use your <strong>TELUS Digital work email</strong> — the one ending in <code>@telusinternational.com</code>.</li>
+  <li>Complete the login process in your browser.</li>
+</ol>
+
+<p>Leave Claude open — you'll use it after the setup is complete.</p>
+
+<h3>D. Open Terminal</h3>
 
 <p>You'll run several commands in a program called <strong>Terminal</strong> that comes pre-installed on every Mac.</p>
 <ol>
@@ -456,9 +637,30 @@ Press Enter to open github.com in your browser...</code></pre></div>
 
 <p>The guide saves the project to your <strong>Desktop</strong> for simplicity. You can pick any folder, but use the same path in every step below.</p>
 
+<p>Choose <strong>one</strong> of the two paths below:</p>
+
+<h3>Path A — Standard (WillowTree organization)</h3>
+
+<p><strong>Use this if you have access to the WillowTree GitHub organization.</strong></p>
+
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>cd ~/Desktop</code></pre></div>
 
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>git clone https://github.com/willowtreeapps/salesforce-mcp.git</code></pre></div>
+
+<h3>Path B — Alternative (Mohammed's repository)</h3>
+
+<p><strong>Use this if you cannot access the WillowTree organization.</strong> This is an alternative maintained by Mohammed (GitHub username: <code>makwt</code>).</p>
+
+<div class="code-block"><button class="copy-btn">Copy</button><pre><code>cd ~/Desktop</code></pre></div>
+
+<div class="code-block"><button class="copy-btn">Copy</button><pre><code>git clone https://github.com/makwt/salesforce-mcp.git</code></pre></div>
+
+<div class="callout note">
+  <p class="callout-title">Need collaborator access?</p>
+  <p>If you use Path B and don't have access, provide Mohammed (makwt) with your GitHub username and he can grant you access to the repository.</p>
+</div>
+
+<h3>After cloning (both paths)</h3>
 
 <p>If this is your first time using git in Terminal, it may ask for your name and email. Run these two commands first — replace the placeholders with your real name and <strong>TELUS Digital email</strong>:</p>
 
@@ -466,11 +668,7 @@ Press Enter to open github.com in your browser...</code></pre></div>
 
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>git config --global user.email "your.name@telusinternational.com"</code></pre></div>
 
-<p>Then re-run the clone:</p>
-
-<div class="code-block"><button class="copy-btn">Copy</button><pre><code>git clone https://github.com/willowtreeapps/salesforce-mcp.git</code></pre></div>
-
-<p>When it finishes, move into the new folder:</p>
+<p>Then move into the folder you just cloned (the folder name is the same for both paths):</p>
 
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>cd ~/Desktop/salesforce-mcp</code></pre></div>
 
@@ -531,7 +729,11 @@ Press Enter to open github.com in your browser...</code></pre></div>
 <h2>Common questions</h2>
 
 <h3>My session expired / I get an authentication error</h3>
-<p>Just tell Claude: <strong>"reconnect"</strong> — it will re-authenticate without restarting anything.</p>
+<p>Re-authenticate at the terminal with one command, then tell your AI assistant <strong>"reconnect"</strong>:</p>
+
+<div class="code-block"><button class="copy-btn">Copy</button><pre><code>sf org login web --instance-url https://willowtree.my.salesforce.com --alias willowtree</code></pre></div>
+
+<p>Your browser opens to the WillowTree Salesforce login page (same as during setup). Log in, return to Terminal, then tell your AI assistant: <strong>"reconnect"</strong>. It will pick up the new session without restarting anything.</p>
 
 <h3>I want to re-run setup</h3>
 <p>That's safe. Navigate back to the folder and run setup again:</p>
@@ -570,19 +772,30 @@ Press Enter to open github.com in your browser...</code></pre></div>
 
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>cd ~/Desktop</code></pre></div>
 
+<p><strong>Choose one:</strong></p>
+
+<p><em>Path A (WillowTree org):</em></p>
+
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>git clone https://github.com/willowtreeapps/salesforce-mcp.git</code></pre></div>
+
+<p><em>Path B (Mohammed's repo):</em></p>
+
+<div class="code-block"><button class="copy-btn">Copy</button><pre><code>git clone https://github.com/makwt/salesforce-mcp.git</code></pre></div>
+
+<p><strong>Then continue:</strong></p>
 
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>cd ~/Desktop/salesforce-mcp</code></pre></div>
 
 <div class="code-block"><button class="copy-btn">Copy</button><pre><code>bash setup.sh</code></pre></div>
 
 <footer>
-  Salesforce MCP — WillowTree / TELUS Digital · Setup guide for macOS
+  Salesforce MCP — Setup guide for macOS · Maintained by Mohammed (makwt) with contributions from WillowTree
 </footer>
 
 </div>
 
 <script>
+  // Copy button functionality
   document.querySelectorAll('.copy-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var code = btn.parentElement.querySelector('code').innerText;
@@ -595,6 +808,43 @@ Press Enter to open github.com in your browser...</code></pre></div>
           btn.classList.remove('copied');
         }, 1600);
       });
+    });
+  });
+
+  // Sidebar navigation active state
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  function updateActiveLink() {
+    const scrollPosition = window.scrollY + 200;
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      const targetId = link.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        const elementTop = targetElement.offsetTop;
+        const elementBottom = elementTop + targetElement.offsetHeight;
+
+        if (scrollPosition >= elementTop && scrollPosition < elementBottom) {
+          link.classList.add('active');
+        }
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveLink);
+  updateActiveLink();
+
+  // Smooth scroll for nav links
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth' });
+      }
     });
   });
 </script>

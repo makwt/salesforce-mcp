@@ -61,7 +61,13 @@ Open your AI assistant and try questions like:
 
 ### My session expired / I need to log in again
 
-Just tell your AI assistant: **"reconnect"** — it will re-authenticate without any restart.
+Re-authenticate at a terminal (one command):
+
+```bash
+sf org login web --instance-url https://willowtree.my.salesforce.com --alias willowtree
+```
+
+Then tell your AI assistant **"reconnect"** — it will pick up the new session without restarting the client.
 
 ### Need to re-run setup?
 
@@ -102,14 +108,19 @@ npm run dev       # watch mode for development
 
 ### Authentication
 
-On the first tool call, the server authenticates via the Salesforce CLI:
+The MCP server reads its access token from the `sf` CLI's existing session — it never opens a browser. The browser-based SSO login happens **once at install time**, when `setup.sh` runs `sf org login web` interactively in your terminal. After that:
 
-1. It runs `sf org login web`, which opens your browser to the Salesforce SSO login page.
-2. You log in through the browser and authorize access.
-3. The CLI stores the session locally, and the server retrieves the access token via `sf org display`.
-4. The token is cached in memory for subsequent calls — no repeated logins within the same session.
+1. The MCP server calls `sf org display --target-org willowtree --verbose --json` to read the cached access token.
+2. The token is cached in memory for the lifetime of the MCP process — no repeated CLI calls within the session.
+3. When the Salesforce session eventually expires (12 hours to several days, depending on org policy), re-authenticate at a shell:
 
-If your session expires, use the `reconnect` tool to re-authenticate without restarting the server.
+   ```bash
+   sf org login web --instance-url https://willowtree.my.salesforce.com --alias willowtree
+   ```
+
+   Then call the `reconnect` tool (or restart your AI client) to drop the in-memory cache.
+
+> **Why no browser launch inside the MCP?** The server communicates over stdio. Spawning `sf org login web` from inside the server pipes-stdout to nowhere, the browser flow can't complete, and the MCP hangs. That's why the initial login is split out into `setup.sh`.
 
 ### MCP Client Configuration
 
