@@ -251,6 +251,24 @@ sf org login web --instance-url https://willowtree.my.salesforce.com --alias wil
 
 Your browser opens to the WillowTree Salesforce login page (same as during setup). Log in, return to Terminal, then tell your AI assistant: **"reconnect"**. It will pick up the new session without restarting anything.
 
+**A tool call hangs / never returns a result.**
+The MCP server runs over a data pipe and cannot open a browser. If it seems stuck, you are likely on an older version. Pull the latest and rebuild:
+
+```bash
+cd ~/Desktop/salesforce-mcp
+git pull
+bash setup.sh
+```
+
+Then restart your AI client. The server now reads your existing Salesforce CLI session silently — no browser needed after the initial setup.
+
+**Claude Code is using the wrong Salesforce tool (not returning my data).**
+Claude Code has access to several Salesforce-related tools. If it picks the wrong one, be explicit:
+
+> *"Use the local salesforce MCP — what projects am I on?"*
+
+The local tools are named things like `list_my_projects`, `whoami`, and `get_revenue_forecast`. If you see it trying to use "TDX Salesforce" or "WT Salesforce Sandbox", those are different cloud connectors and are unrelated to this server.
+
 **I want to re-run setup.**
 That's safe. Just navigate back to the folder and run setup again:
 

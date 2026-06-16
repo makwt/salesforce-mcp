@@ -440,6 +440,7 @@
       <li><a href="#step5" class="nav-link">Run Setup</a></li>
       <li><a href="#step6" class="nav-link">Restart & Test</a></li>
       <li><a href="#faq" class="nav-link">Common Questions</a></li>
+      <li><a href="#troubleshooting" class="nav-link">Troubleshooting</a></li>
       <li><a href="#quickref" class="nav-link">Quick Reference</a></li>
     </ul>
   </div>
@@ -755,6 +756,25 @@ Press Enter to open github.com in your browser...</code></pre></div>
 
 <h3>Something broke / I'm stuck</h3>
 <p>Copy and paste whatever Terminal printed (the full error message) and share it with your team or the repository maintainer. The error message is the single most useful thing for diagnosing problems.</p>
+
+<hr id="troubleshooting" />
+
+<h2>Troubleshooting</h2>
+
+<h3>A tool call hangs / never returns a result</h3>
+<p>The MCP server runs over a data pipe and <strong>cannot open a browser</strong>. If a tool call seems stuck and never returns, you are likely on an older version of this repo that tried to launch a browser from inside the server. Pull the latest and rebuild:</p>
+
+<div class="code-block"><button class="copy-btn">Copy</button><pre><code>cd ~/Desktop/salesforce-mcp</code></pre></div>
+<div class="code-block"><button class="copy-btn">Copy</button><pre><code>git pull</code></pre></div>
+<div class="code-block"><button class="copy-btn">Copy</button><pre><code>bash setup.sh</code></pre></div>
+
+<p>Then restart your AI client (quit and reopen). The server now reads your existing Salesforce CLI session silently — no browser needed after the initial setup.</p>
+
+<h3>Claude Code picks the wrong Salesforce tool (not returning my data)</h3>
+<p>Claude Code has access to several Salesforce-related connectors. If it reaches for one called <strong>"TDX Salesforce"</strong> or <strong>"WT Salesforce Sandbox"</strong> instead of your local server, those are separate cloud connectors that require their own OAuth setup and are unrelated to this MCP.</p>
+<p>Fix: be explicit in your prompt:</p>
+<blockquote><em>"Use the local salesforce MCP — what projects am I on?"</em></blockquote>
+<p>Or name the tool directly, e.g. <em>"call list_my_projects"</em>. The local tools are named things like <code>list_my_projects</code>, <code>whoami</code>, <code>get_revenue_forecast</code>, and <code>find_contacts</code>.</p>
 
 <hr id="quickref" />
 

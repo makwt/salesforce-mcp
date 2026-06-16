@@ -69,6 +69,26 @@ sf org login web --instance-url https://willowtree.my.salesforce.com --alias wil
 
 Then tell your AI assistant **"reconnect"** — it will pick up the new session without restarting the client.
 
+### Tool call hangs / never returns a result
+
+The MCP server must not open a browser — it runs over stdio and any browser launch will silently block. If tool calls hang, you are likely on an older version of this repo. Fix:
+
+```bash
+cd ~/Desktop/salesforce-mcp
+git pull
+npm run build
+```
+
+Then restart your AI client. The server now reads your existing `sf` CLI session instead of launching a browser.
+
+### Claude Code picks the wrong Salesforce tool (e.g. "TDX Salesforce" or "WT Salesforce Sandbox")
+
+Claude Code has access to several Salesforce-related MCP connectors. If it reaches for a cloud connector instead of the local one, be explicit in your prompt:
+
+> *"Use the local salesforce MCP — list my projects."*
+
+Or name the tool directly: *"call list_my_projects"*. The local tools are things like `list_my_projects`, `whoami`, `get_revenue_forecast`, etc. The TDX and Sandbox connectors require separate OAuth setup and are unrelated to this server.
+
 ### Need to re-run setup?
 
 `bash setup.sh` is safe to run as many times as you like.
