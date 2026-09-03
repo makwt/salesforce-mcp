@@ -60,46 +60,62 @@ import { registerReconnectTool } from "./tools/util/reconnect.js";
 import { registerRunSoqlQueryTool } from "./tools/util/runSoqlQuery.js";
 import { registerRunSoslSearchTool } from "./tools/util/runSoslSearch.js";
 
+/**
+ * SF_TOOLSET selects which tools this server instance exposes.
+ *
+ *   full    (default) — all tools. Requires the Salesforce PSA managed package
+ *                       (pse__* objects), i.e. the WillowTree org.
+ *   generic           — only org-agnostic tools: whoami, run_soql_query,
+ *                       run_sosl_search, get_object_fields, reconnect.
+ *                       Use for any org without PSA installed; the PSA tools
+ *                       would only return INVALID_TYPE errors there.
+ */
+const TOOLSET = process.env.SF_TOOLSET === "generic" ? "generic" : "full";
+
 export const server = new McpServer({
-  name: "salesforce-mcp",
+  name: TOOLSET === "generic" ? "salesforce-mcp-generic" : "salesforce-mcp",
   version: "0.1.0",
 });
 
-registerAccountDetailsTool(server);
-registerAllocationsTool(server);
-registerBenchResourcesTool(server);
-registerDirectReportsTool(server);
-registerFindContactsTool(server);
-registerGetContactTool(server);
-registerHeadcountTool(server);
+// Org-agnostic tools — safe against any Salesforce org.
 registerWhoAmITool(server);
-registerMyDeliveryMetricsTool(server);
-registerMyTeamDeliveryMetricsTool(server);
-registerOpportunitiesTool(server);
-registerAllProjectsTool(server);
-registerClientProjectHistoryTool(server);
-registerFindProjectTool(server);
-registerMilestonesTool(server);
-registerMyProjectsTool(server);
-registerPortfolioSummaryTool(server);
-registerResourceRequestsTool(server);
-registerBillingEventsTool(server);
-registerComparePeriodsTool(server);
-registerEstVsActualsTool(server);
-registerRevenueByClientTool(server);
-registerRevenueForecastTool(server);
-registerVarianceBreakdownTool(server);
-registerSkillsTool(server);
-registerUpsertSkillTool(server);
-registerResourceSkillsTool(server);
-registerTimeOffsTool(server);
-registerMissingTimecardsTools(server);
-registerMissingApprovalsTools(server);
-registerAllMissingTimecardsTools(server);
-registerAllMissingApprovalsTools(server);
-registerApproveTimecardsTools(server);
-registerFindRecordsTool(server);
 registerGetObjectFieldsTool(server);
 registerRunSoqlQueryTool(server);
 registerRunSoslSearchTool(server);
 registerReconnectTool(server);
+
+if (TOOLSET === "full") {
+  registerAccountDetailsTool(server);
+  registerAllocationsTool(server);
+  registerBenchResourcesTool(server);
+  registerDirectReportsTool(server);
+  registerFindContactsTool(server);
+  registerGetContactTool(server);
+  registerHeadcountTool(server);
+  registerMyDeliveryMetricsTool(server);
+  registerMyTeamDeliveryMetricsTool(server);
+  registerOpportunitiesTool(server);
+  registerAllProjectsTool(server);
+  registerClientProjectHistoryTool(server);
+  registerFindProjectTool(server);
+  registerMilestonesTool(server);
+  registerMyProjectsTool(server);
+  registerPortfolioSummaryTool(server);
+  registerResourceRequestsTool(server);
+  registerBillingEventsTool(server);
+  registerComparePeriodsTool(server);
+  registerEstVsActualsTool(server);
+  registerRevenueByClientTool(server);
+  registerRevenueForecastTool(server);
+  registerVarianceBreakdownTool(server);
+  registerSkillsTool(server);
+  registerUpsertSkillTool(server);
+  registerResourceSkillsTool(server);
+  registerTimeOffsTool(server);
+  registerMissingTimecardsTools(server);
+  registerMissingApprovalsTools(server);
+  registerAllMissingTimecardsTools(server);
+  registerAllMissingApprovalsTools(server);
+  registerApproveTimecardsTools(server);
+  registerFindRecordsTool(server);
+}
