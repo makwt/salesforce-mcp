@@ -142,6 +142,45 @@ The MCP server reads its access token from the `sf` CLI's existing session — i
 
 > **Why no browser launch inside the MCP?** The server communicates over stdio. Spawning `sf org login web` from inside the server pipes-stdout to nowhere, the browser flow can't complete, and the MCP hangs. That's why the initial login is split out into `setup.sh`.
 
+### Running against a second org
+
+One server process talks to exactly one org. To query a second Salesforce org, run a
+**second instance of this same build** with two env vars set — no code fork, no second
+checkout.
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `SF_TARGET_ORG` | Which `sf` CLI alias to read the session from | `willowtree` |
+| `SF_TOOLSET` | `full` (all tools) or `generic` (org-agnostic tools only) | `full` |
+
+**Step 1 — authenticate the second org once, at a terminal:**
+
+```bash
+sf org login web --instance-url https://<your-org>.my.salesforce.com --alias <alias>
+```
+
+**Step 2 — register a second MCP server** pointing at the same `dist/index.js`:
+
+```bash
+claude mcp add salesforce-<alias> -s user -e SF_TARGET_ORG=<alias> -e SF_TOOLSET=generic -- node /path/to/salesforce-mcp/dist/index.js
+```
+
+Set `SF_TOOLSET=generic` for **any org without the Salesforce PSA managed package**.
+Most tools here query `pse__*` objects and would only return `INVALID_TYPE` errors
+against a non-PSA org. Generic mode exposes the five tools that work anywhere:
+`whoami`, `run_soql_query`, `run_sosl_search`, `get_object_fields`, `reconnect`.
+
+**Notes**
+
+- The instance URL is read from the `sf` CLI for the named alias, never from env.
+  `SALESFORCE_INSTANCE_URL` is honoured **only on the default org** — `.env` pins it
+  to WillowTree, and dotenv would otherwise leak that value into the second instance
+  and 401 every call.
+- `whoami` reports the target org alias and org ID, so you can always confirm which
+  org a tool call hit. It no longer requires a linked Contact record, which a user
+  in a non-PSA org typically won't have.
+- Each instance caches its own token. `reconnect` clears only its own.
+
 ### MCP Client Configuration
 
 #### Cursor

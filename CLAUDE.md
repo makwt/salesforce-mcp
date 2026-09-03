@@ -117,7 +117,11 @@ sf org login web --instance-url https://willowtree.my.salesforce.com --alias wil
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `SALESFORCE_INSTANCE_URL` | Salesforce org URL | `https://willowtree.my.salesforce.com` |
+| `SF_TARGET_ORG` | `sf` CLI alias to read the session from. Set this to run a second instance against another org. | `willowtree` |
+| `SF_TOOLSET` | `full` = all tools (needs the PSA package); `generic` = org-agnostic tools only (`whoami`, `run_soql_query`, `run_sosl_search`, `get_object_fields`, `reconnect`) | `full` |
+| `SALESFORCE_INSTANCE_URL` | Salesforce org URL. **Honoured only when `SF_TARGET_ORG` is unset** — otherwise the URL comes from the `sf` CLI for the named alias, so a token can never be paired with another org's URL. | `https://willowtree.my.salesforce.com` |
+
+See README "Running against a second org" for the multi-org setup.
 
 ## Salesforce Objects Queried
 
