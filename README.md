@@ -162,7 +162,7 @@ sf org login web --instance-url https://<your-org>.my.salesforce.com --alias <al
 **Step 2 — register a second MCP server** pointing at the same `dist/index.js`:
 
 ```bash
-claude mcp add salesforce-<alias> --env SF_TARGET_ORG=<alias> --env SF_TOOLSET=generic -- node /path/to/salesforce-mcp/dist/index.js
+claude mcp add salesforce-<alias> -s user -e SF_TARGET_ORG=<alias> -e SF_TOOLSET=generic -- node /path/to/salesforce-mcp/dist/index.js
 ```
 
 Set `SF_TOOLSET=generic` for **any org without the Salesforce PSA managed package**.
