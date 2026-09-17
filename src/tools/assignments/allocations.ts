@@ -12,45 +12,56 @@ interface AssignmentRecord {
     pse__Region__r: { Name: string } | null;
     pse__Practice__r: { Name: string } | null;
     pse__Group__r: { Name: string } | null;
+    // Cost rate lives on the resource (Contact), not the assignment. Only
+    // selected when include_financial_fields is true.
+    pse__Default_Cost_Rate__c?: number | null;
   } | null;
   pse__Project__r: { Name: string } | null;
   pse__Start_Date__c: string | null;
   pse__End_Date__c: string | null;
   pse__Status__c: string | null;
   pse__Percent_Allocated__c: number | null;
-  pse__Is_Billable__c: boolean;
   Reporting_Company__c: string | null;
   Resource_Country__c: string | null;
-  pse__Bill_Rate__c: number | null;
   pse__Scheduled_Hours__c: number | null;
-  pse__Projected_Revenue__c: number | null;
-  pse__Cost_Rate__c: number | null;
-  pse__Time_Credited__c: boolean;
+  // Financial fields — only present when include_financial_fields is true.
+  pse__Is_Billable__c?: boolean;
+  pse__Bill_Rate__c?: number | null;
+  pse__Projected_Revenue__c?: number | null;
+  pse__Time_Credited__c?: boolean;
 }
 
-const ASSIGNMENT_FIELDS = `
-  Id,
-  Name,
-  pse__Resource__r.Name,
-  pse__Resource__r.Business_Title__c,
-  pse__Resource__r.Email,
-  pse__Resource__r.pse__Region__r.Name,
-  pse__Resource__r.pse__Practice__r.Name,
-  pse__Resource__r.pse__Group__r.Name,
-  pse__Project__r.Name,
-  pse__Start_Date__c,
-  pse__End_Date__c,
-  pse__Status__c,
-  pse__Percent_Allocated__c,
-  pse__Is_Billable__c,
-  Reporting_Company__c,
-  Resource_Country__c,
-  pse__Bill_Rate__c,
-  pse__Scheduled_Hours__c,
-  pse__Projected_Revenue__c,
-  pse__Cost_Rate__c,
-  pse__Time_Credited__c
-`.trim();
+// Base fields always selected.
+const BASE_ASSIGNMENT_FIELDS = [
+  "Id",
+  "Name",
+  "pse__Resource__r.Name",
+  "pse__Resource__r.Business_Title__c",
+  "pse__Resource__r.Email",
+  "pse__Resource__r.pse__Region__r.Name",
+  "pse__Resource__r.pse__Practice__r.Name",
+  "pse__Resource__r.pse__Group__r.Name",
+  "pse__Project__r.Name",
+  "pse__Start_Date__c",
+  "pse__End_Date__c",
+  "pse__Status__c",
+  "pse__Percent_Allocated__c",
+  "Reporting_Company__c",
+  "Resource_Country__c",
+  "pse__Scheduled_Hours__c",
+];
+
+// Financial fields — appended only when include_financial_fields is true, so a
+// single missing financial column can't break the whole query. Cost rate is
+// read from the resource (Contact) via pse__Resource__r.pse__Default_Cost_Rate__c;
+// pse__Cost_Rate__c does not exist on pse__Assignment__c.
+const FINANCIAL_ASSIGNMENT_FIELDS = [
+  "pse__Is_Billable__c",
+  "pse__Time_Credited__c",
+  "pse__Bill_Rate__c",
+  "pse__Resource__r.pse__Default_Cost_Rate__c",
+  "pse__Projected_Revenue__c",
+];
 
 function escapeLike(value: string): string {
   return value.replace(/%/g, "\\%").replace(/_/g, "\\_");
@@ -168,10 +179,16 @@ export function registerAllocationsTool(server: McpServer) {
       if (resource_role) conditions.push(`pse__Resource__r.pse__Resource_Role__c LIKE '%${escapeLike(resource_role)}%'`);
       if (email) conditions.push(`pse__Resource__r.Email LIKE '%${escapeLike(email)}%'`);
 
+      const selectedFields = (
+        include_financial_fields
+          ? [...BASE_ASSIGNMENT_FIELDS, ...FINANCIAL_ASSIGNMENT_FIELDS]
+          : BASE_ASSIGNMENT_FIELDS
+      ).join(",\n          ");
+
       let records: AssignmentRecord[];
       try {
         records = await soqlQueryAll<AssignmentRecord>(`
-          SELECT ${ASSIGNMENT_FIELDS}
+          SELECT ${selectedFields}
           FROM pse__Assignment__c
           WHERE ${conditions.join("\n            AND ")}
           ORDER BY pse__Resource__r.Name ASC, pse__Start_Date__c ASC
@@ -202,7 +219,7 @@ export function registerAllocationsTool(server: McpServer) {
         const countryVal = r.Resource_Country__c ?? "—";
         const url = `${instanceUrl}/${r.Id}`;
 
-        const fmt = (n: number | null, prefix = "") =>
+        const fmt = (n: number | null | undefined, prefix = "") =>
           n != null ? `${prefix}${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—";
 
         const serviceLine = r.pse__Resource__r?.pse__Group__r?.Name ?? "—";
@@ -221,7 +238,7 @@ export function registerAllocationsTool(server: McpServer) {
             `  Billable:           ${r.pse__Is_Billable__c ? "Yes" : "No"}`,
             `  Time Credited:      ${r.pse__Time_Credited__c ? "Yes" : "No"}`,
             `  Bill Rate:          ${fmt(r.pse__Bill_Rate__c, "$")}`,
-            `  Cost Rate:          ${fmt(r.pse__Cost_Rate__c, "$")}`,
+            `  Cost Rate:          ${fmt(r.pse__Resource__r?.pse__Default_Cost_Rate__c, "$")}`,
             `  Projected Revenue:  ${fmt(r.pse__Projected_Revenue__c, "$")}`,
           ] : []),
           `  Status:             ${r.pse__Status__c ?? "—"}`,
